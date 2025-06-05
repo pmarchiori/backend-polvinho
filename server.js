@@ -3,8 +3,9 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 
-import UserModel from "./src/models/UserModel.js";
-import SubjectModel from "./src/models/SubjectModel.js";
+import userRoutes from "./src/routes/userRoutes.js";
+import subjectRoutes from "./src/routes/subjectRoutes.js";
+import authRoutes from "./src/routes/authRoutes.js";
 
 const app = express();
 dotenv.config();
@@ -24,66 +25,6 @@ mongoose
   })
   .catch((error) => console.log(error));
 
-import userRoutes from "./src/routes/userRoutes.js";
-
-app.use("/", userRoutes);
-//create
-app.post("/users", async (req, res) => {
-  try {
-    const novoUsuario = await UserModel.create(req.body);
-    res.json(novoUsuario);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-//read
-app.get("/users", async (req, res) => {
-  try {
-    const users = await UserModel.find();
-    res.json(users);
-  } catch (error) {
-    res.json({ error: error });
-  }
-});
-
-//update
-app.put("/users/:id", async (req, res) => {
-  try {
-    const user = await UserModel.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    res.json(user);
-  } catch (error) {
-    res.json({ error: error });
-  }
-});
-
-//delete
-app.delete("/users/:id", async (req, res) => {
-  try {
-    const deletedUser = await UserModel.findByIdAndDelete(req.params.id);
-    res.json(user);
-  } catch (error) {
-    res.json({ error: error });
-  }
-});
-
-//SUBJECTS
-app.post("/subjects", async (req, res) => {
-  try {
-    const newSubject = await SubjectModel.create(req.body);
-    res.json(newSubject);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.get("/subjects", async (req, res) => {
-  try {
-    const subjects = await SubjectModel.find();
-    res.json(subjects);
-  } catch (error) {
-    res.json({ error: error });
-  }
-});
+app.use("/users", userRoutes);
+app.use("/subjects", subjectRoutes);
+app.use("/login", authRoutes);
