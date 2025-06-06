@@ -1,7 +1,6 @@
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import jwt from "jsonwebtoken";
 
 import userRoutes from "./src/routes/userRoutes.js";
 import subjectRoutes from "./src/routes/subjectRoutes.js";
