@@ -1,25 +1,55 @@
 import UserModel from "../models/UserModel.js";
 import bcrypt from "bcrypt";
 
+// export const createUser = async (req, res) => {
+//   try {
+//     const { password, ...rest } = req.body;
+
+//     if (!password) {
+//       return res.status(400).json({ error: "Senha é obrigatória" });
+//     }
+
+//     const salt = await bcrypt.genSalt(10);
+//     const passwordHash = await bcrypt.hash(password, salt);
+
+//     const newUser = await UserModel.create({
+//       ...rest,
+//       passwordHash,
+//     });
+
+//     res
+//       .status(201)
+//       .json({ message: "Usuário criado com sucesso", user: newUser });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
 export const createUser = async (req, res) => {
   try {
-    const { password, ...rest } = req.body;
+    const { email, registration, ...rest } = req.body;
 
-    if (!password) {
-      return res.status(400).json({ error: "Senha é obrigatória" });
+    if (!email || !registration) {
+      return res
+        .status(400)
+        .json({ error: "Email e matrícula são obrigatórios" });
     }
 
+    const password = registration;
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
 
     const newUser = await UserModel.create({
       ...rest,
+      email,
+      registration,
       passwordHash,
     });
 
-    res
-      .status(201)
-      .json({ message: "Usuário criado com sucesso", user: newUser });
+    res.status(201).json({
+      message: "Usuário criado com sucesso",
+      user: newUser,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -45,9 +75,19 @@ export const getUserById = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   try {
-    const user = await UserModel.findByIdAndUpdate(req.params.id, req.body, {
+    const { password, ...rest } = req.body;
+    const updateData = { ...rest };
+
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash(password, salt);
+      updateData.passwordHash = passwordHash;
+    }
+
+    const user = await UserModel.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
     });
+
     res.json(user);
   } catch (error) {
     res.status(500).json({ error: error.message });
