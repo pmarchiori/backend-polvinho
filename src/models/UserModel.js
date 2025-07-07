@@ -6,7 +6,7 @@ const UserSchema = new mongoose.Schema(
     email: { type: String, required: true, unique: true },
     birthDate: { type: Date },
     registration: { type: String, required: true, unique: true },
-    role: { type: String, default: "aluno" },
+    role: { type: String, default: "student" },
     subject: { type: mongoose.Schema.Types.ObjectId, default: null },
     passwordHash: { type: String, required: true },
     isRemoved: { type: Boolean, default: false },

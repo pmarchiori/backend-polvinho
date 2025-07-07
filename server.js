@@ -10,7 +10,7 @@ import authRoutes from "./src/routes/authRoutes.js";
 const app = express();
 dotenv.config();
 
-const PORT = process.env.PORT || 7000;
+const PORT = process.env.PORT || 8000;
 const MONGOURL = process.env.MONGO_URL;
 
 app.use(cors());

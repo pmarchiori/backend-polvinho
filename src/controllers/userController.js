@@ -64,9 +64,21 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
+export const getAllActiveUsers = async (req, res) => {
+  try {
+    const users = await UserModel.find({ isRemoved: false });
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const getUserById = async (req, res) => {
   try {
     const user = await UserModel.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não encontrado." });
+    }
     res.json(user);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -88,7 +100,28 @@ export const updateUser = async (req, res) => {
       new: true,
     });
 
+    if (!user) {
+      return res
+        .status(404)
+        .json({ error: "Usuário não encontrado para atualização." });
+    }
     res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const softDeleteUser = async (req, res) => {
+  try {
+    const user = await UserModel.findByIdAndUpdate(
+      req.params.id,
+      { isRemoved: true },
+      { new: true }
+    );
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não encontrado." });
+    }
+    res.json({ message: "Usuário marcado como removido.", user });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -102,8 +135,8 @@ export const deleteUser = async (req, res) => {
       return res.status(404).json({ message: "Usuário não encontrado." });
     }
 
-    res.json({ message: "Usuário removido com sucesso." });
+    res.json({ message: "Usuário excluído com sucesso." });
   } catch (error) {
-    res.status(500).json({ error: "Erro ao remover usuário.", details: error });
+    res.status(500).json({ error: "Erro ao excluir usuário.", details: error });
   }
 };
