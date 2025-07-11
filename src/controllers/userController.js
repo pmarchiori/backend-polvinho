@@ -1,30 +1,6 @@
 import UserModel from "../models/UserModel.js";
 import bcrypt from "bcrypt";
 
-// export const createUser = async (req, res) => {
-//   try {
-//     const { password, ...rest } = req.body;
-
-//     if (!password) {
-//       return res.status(400).json({ error: "Senha é obrigatória" });
-//     }
-
-//     const salt = await bcrypt.genSalt(10);
-//     const passwordHash = await bcrypt.hash(password, salt);
-
-//     const newUser = await UserModel.create({
-//       ...rest,
-//       passwordHash,
-//     });
-
-//     res
-//       .status(201)
-//       .json({ message: "Usuário criado com sucesso", user: newUser });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
-
 export const createUser = async (req, res) => {
   try {
     const { email, registration, ...rest } = req.body;
@@ -57,8 +33,22 @@ export const createUser = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await UserModel.find();
-    res.json(users);
+    const page = parseInt(req.query.page) || 1;
+    const limit = 8;
+    const skip = (page - 1) * limit;
+    const role = req.query.role;
+
+    const filter = {};
+    if (role) filter.role = role;
+
+    const [users, total] = await Promise.all([
+      UserModel.find(...filter)
+        .skip(skip)
+        .limit(limit),
+      UserModel.countDocuments(filter),
+    ]);
+
+    res.json({ users, total, page, totalPages: Math.ceil(total / limit) });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -66,8 +56,21 @@ export const getAllUsers = async (req, res) => {
 
 export const getAllActiveUsers = async (req, res) => {
   try {
-    const users = await UserModel.find({ isRemoved: false });
-    res.json(users);
+    const page = parseInt(req.query.page) || 1;
+    const limit = 8;
+    const skip = (page - 1) * limit;
+    const role = req.query.role;
+
+    const filter = {};
+    if (role) filter.role = role;
+
+    const [users, total] = await Promise.all([
+      UserModel.find({ isRemoved: false, ...filter })
+        .skip(skip)
+        .limit(limit),
+      UserModel.countDocuments(filter),
+    ]);
+    res.json({ users, total, page, totalPages: Math.ceil(total / limit) });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -115,7 +118,7 @@ export const softDeleteUser = async (req, res) => {
   try {
     const user = await UserModel.findByIdAndUpdate(
       req.params.id,
-      { isRemoved: true },
+      { isRemoved: true, subjects: [] },
       { new: true }
     );
     if (!user) {
