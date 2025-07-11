@@ -21,7 +21,7 @@ Siga os passos abaixo para clonar e executar o projeto localmente.
 
 ```bash
 git clone https://github.com/pmarchiori/backend-polvinho.git
-cd seu-repositorio
+cd backend-polvinho
 ```
 
 ### 2. Instalar dependências
