@@ -61,7 +61,7 @@ Caso prefira rodar o projeto com Docker, siga os passos abaixo. Isso irá inicia
 
 
 ### 1. Certifique-se de que o Docker e Docker Compose estão instalados
-Instalar Docker Desktop
+[Instalar Docker Desktop](https://docs.docker.com/desktop/)
 
 
 ### 2. Configurar o arquivo .env
