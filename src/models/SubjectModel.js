@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const SubjectSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
+    teacher: { type: String },
     isRemoved: { type: Boolean, default: false },
     startDate: { type: Date, required: true },
     finishDate: { type: Date, required: true },
