@@ -11,8 +11,23 @@ export const createSubject = async (req, res) => {
 
 export const getAllSubjects = async (req, res) => {
   try {
-    const subjects = await SubjectModel.find();
-    res.json(subjects);
+    const page = parseInt(req.query.page) || 1;
+    const limit = 8;
+    const skip = (page - 1) * limit;
+
+    const filter = { isRemoved: false };
+
+    const [subjects, total] = await Promise.all([
+      SubjectModel.find(filter).skip(skip).limit(limit),
+      SubjectModel.countDocuments(filter),
+    ]);
+
+    res.json({
+      subjects,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -35,6 +50,22 @@ export const updateSubject = async (req, res) => {
       { new: true }
     );
     res.json(subject);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const softDeleteSubject = async (req, res) => {
+  try {
+    const subject = await SubjectModel.findByIdAndUpdate(
+      req.params.id,
+      { isRemoved: true },
+      { new: true }
+    );
+    if (!subject) {
+      return res.status(404).json({ error: "Disciplina não encontrada." });
+    }
+    res.json({ message: "Disciplina marcada como removida.", subject });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
