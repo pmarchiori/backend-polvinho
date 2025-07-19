@@ -3,10 +3,9 @@ import mongoose from "mongoose";
 const SubjectSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
-    teacher: { type: String },
+    teacher: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
+    students: [{ type: mongoose.Schema.Types.ObjectId, ref: "users" }],
     isRemoved: { type: Boolean, default: false },
-    startDate: { type: Date, required: true },
-    finishDate: { type: Date, required: true },
     removedDate: { type: Date, default: null },
   },
   {

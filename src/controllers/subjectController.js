@@ -18,7 +18,10 @@ export const getAllSubjects = async (req, res) => {
     const filter = { isRemoved: false };
 
     const [subjects, total] = await Promise.all([
-      SubjectModel.find(filter).skip(skip).limit(limit),
+      SubjectModel.find(filter)
+        .populate("teacher", "name")
+        .skip(skip)
+        .limit(limit),
       SubjectModel.countDocuments(filter),
     ]);
 
