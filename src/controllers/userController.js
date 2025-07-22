@@ -1,15 +1,18 @@
 import UserModel from "../models/UserModel.js";
+import SubjectModel from "../models/SubjectModel.js";
 import bcrypt from "bcrypt";
 
 export const createUser = async (req, res) => {
   try {
-    const { email, registration, ...rest } = req.body;
+    const { email, registration, role, subjects = [], ...rest } = req.body;
 
     if (!email || !registration) {
       return res
         .status(400)
         .json({ error: "Email e matrícula são obrigatórios" });
     }
+
+    const subjectsArray = Array.isArray(subjects) ? subjects : [subjects];
 
     const password = registration;
     const salt = await bcrypt.genSalt(10);
@@ -19,14 +22,31 @@ export const createUser = async (req, res) => {
       ...rest,
       email,
       registration,
+      role,
+      subjects: subjectsArray,
       passwordHash,
     });
+
+    if (subjectsArray.length > 0) {
+      if (role === "teacher") {
+        await SubjectModel.updateMany(
+          { _id: { $in: subjectsArray } },
+          { $set: { teacher: newUser._id } }
+        );
+      } else if (role === "student") {
+        await SubjectModel.updateMany(
+          { _id: { $in: subjectsArray } },
+          { $addToSet: { students: newUser._id } }
+        );
+      }
+    }
 
     res.status(201).json({
       message: "Usuário criado com sucesso",
       user: newUser,
     });
   } catch (error) {
+    console.error("Erro ao criar usuário:", error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -90,40 +110,92 @@ export const getUserById = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   try {
-    const { password, ...rest } = req.body;
-    const updateData = { ...rest };
+    const { password, subjects = [], role, ...rest } = req.body;
+    const userId = req.params.id;
 
-    if (password) {
-      const salt = await bcrypt.genSalt(10);
-      const passwordHash = await bcrypt.hash(password, salt);
-      updateData.passwordHash = passwordHash;
-    }
+    const subjectsArray = Array.isArray(subjects) ? subjects : [subjects];
 
-    const user = await UserModel.findByIdAndUpdate(req.params.id, updateData, {
-      new: true,
-    });
-
-    if (!user) {
+    const currentUser = await UserModel.findById(userId);
+    if (!currentUser) {
       return res
         .status(404)
         .json({ error: "Usuário não encontrado para atualização." });
     }
-    res.json(user);
+
+    const finalRole = role || currentUser.role;
+    const oldSubjects = currentUser.subjects || [];
+
+    const updateData = { ...rest, subjects: subjectsArray };
+
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      updateData.passwordHash = await bcrypt.hash(password, salt);
+    }
+
+    const updatedUser = await UserModel.findByIdAndUpdate(userId, updateData, {
+      new: true,
+    });
+
+    if (oldSubjects.length > 0) {
+      if (currentUser.role === "teacher") {
+        await SubjectModel.updateMany(
+          { teacher: userId },
+          { $unset: { teacher: "" } }
+        );
+      } else if (currentUser.role === "student") {
+        await SubjectModel.updateMany(
+          { students: userId },
+          { $pull: { students: userId } }
+        );
+      }
+    }
+
+    if (subjectsArray.length > 0) {
+      if (finalRole === "teacher") {
+        await SubjectModel.updateMany(
+          { _id: { $in: subjectsArray } },
+          { $set: { teacher: userId } }
+        );
+      } else if (finalRole === "student") {
+        await SubjectModel.updateMany(
+          { _id: { $in: subjectsArray } },
+          { $addToSet: { students: userId } }
+        );
+      }
+    }
+
+    res.json(updatedUser);
   } catch (error) {
+    console.error("Erro ao atualizar usuário:", error);
     res.status(500).json({ error: error.message });
   }
 };
 
 export const softDeleteUser = async (req, res) => {
   try {
-    const user = await UserModel.findByIdAndUpdate(
-      req.params.id,
-      { isRemoved: true, subjects: [] },
-      { new: true }
-    );
+    const userId = req.params.id;
+
+    const user = await UserModel.findById(userId);
     if (!user) {
       return res.status(404).json({ error: "Usuário não encontrado." });
     }
+
+    if (user.role === "teacher") {
+      await SubjectModel.updateMany(
+        { teacher: userId },
+        { $unset: { teacher: "" } }
+      );
+    } else if (user.role === "student") {
+      await SubjectModel.updateMany(
+        { students: userId },
+        { $pull: { students: userId } }
+      );
+    }
+
+    user.isRemoved = true;
+    user.subjects = [];
+    await user.save();
+
     res.json({ message: "Usuário marcado como removido.", user });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -132,6 +204,20 @@ export const softDeleteUser = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
   try {
+    const userId = req.params.id;
+
+    if (user.role === "teacher") {
+      await SubjectModel.updateMany(
+        { teacher: userId },
+        { $unset: { teacher: "" } }
+      );
+    } else if (user.role === "student") {
+      await SubjectModel.updateMany(
+        { students: userId },
+        { $pull: { students: userId } }
+      );
+    }
+
     const deletedUser = await UserModel.findByIdAndDelete(req.params.id);
 
     if (!deletedUser) {
