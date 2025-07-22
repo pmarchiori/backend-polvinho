@@ -37,7 +37,6 @@ const createUsers = async (subjects) => {
       registration: "012345",
       role: "teacher",
       passwordHash,
-      subjects: [subjects[0]._id, subjects[1]._id, subjects[2]._id],
     },
     {
       name: "Professor 2",
@@ -45,7 +44,6 @@ const createUsers = async (subjects) => {
       registration: "123456",
       role: "teacher",
       passwordHash,
-      subjects: subjects[1]._id,
     },
 
     {
@@ -54,7 +52,6 @@ const createUsers = async (subjects) => {
       registration: "234567",
       role: "student",
       passwordHash,
-      subjects: [subjects[2]._id, subjects[1]._id],
     },
     {
       name: "Aluno 2",

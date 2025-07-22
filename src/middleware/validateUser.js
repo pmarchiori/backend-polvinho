@@ -21,7 +21,7 @@ export const validateUser = async (req, res, next) => {
         return res.status(400).json({ error: "Email já cadastrado" });
       }
     } catch (err) {
-      return res.status(500).json({ error: "Erro ao verificar e-mail" });
+      return res.status(500).json({ error: "Erro ao verificar email" });
     }
   }
 
