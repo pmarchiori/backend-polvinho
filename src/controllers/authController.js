@@ -12,6 +12,12 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ error: "Usuário não encontrado" });
     }
 
+    if (user.isRemoved) {
+      return res
+        .status(401)
+        .json({ error: "Usuário não está ativo no sistema" });
+    }
+
     const validPassword = await bcrypt.compare(password, user.passwordHash);
 
     if (!validPassword) {

@@ -10,15 +10,42 @@ import {
 } from "../controllers/userController.js";
 
 import { validateUser } from "../middleware/validateUser.js";
+import {
+  authenticateToken,
+  authorizeRoles,
+} from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", validateUser, createUser);
-router.get("/", getAllActiveUsers);
-router.get("/all", getAllUsers);
-router.get("/:id", getUserById);
-router.put("/:id", validateUser, updateUser);
-router.put("/:id/remove", softDeleteUser);
-router.delete("/:id", deleteUser);
+router.post(
+  "/",
+  validateUser,
+  authenticateToken,
+  authorizeRoles("admin"),
+  createUser
+);
+
+router.get("/", authenticateToken, authorizeRoles("admin"), getAllActiveUsers);
+
+router.get("/all", authenticateToken, authorizeRoles("admin"), getAllUsers);
+
+router.get("/:id", authenticateToken, authorizeRoles("admin"), getUserById);
+
+router.put(
+  "/:id",
+  authenticateToken,
+  authorizeRoles("admin"),
+  validateUser,
+  updateUser
+);
+
+router.put(
+  "/:id/remove",
+  authenticateToken,
+  authorizeRoles("admin"),
+  softDeleteUser
+);
+
+router.delete("/:id", authenticateToken, authorizeRoles("admin"), deleteUser);
 
 export default router;
