@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 
 import UserModel from "../models/UserModel.js";
 import SubjectModel from "../models/SubjectModel.js";
+import QuizModel from "../models/QuizModel.js";
 
 dotenv.config();
 
@@ -27,7 +28,7 @@ const createSubjects = () => [
   },
 ];
 
-const createUsers = async (subjects) => {
+const createUsers = async () => {
   const passwordHash = await bcrypt.hash("Ab123@", 10);
 
   return [
@@ -45,7 +46,6 @@ const createUsers = async (subjects) => {
       role: "teacher",
       passwordHash,
     },
-
     {
       name: "Aluno 1",
       email: "aluno1@email.com",
@@ -84,12 +84,43 @@ async function seedDatabase() {
 
     await UserModel.deleteMany({});
     await SubjectModel.deleteMany({});
+    await QuizModel.deleteMany({});
     console.log("banco limpo");
 
     const insertedSubjects = await SubjectModel.insertMany(createSubjects());
     console.log("disciplinas do seed inseridas");
 
-    const users = await createUsers(insertedSubjects);
+    const quizzes = [];
+    for (const subject of insertedSubjects) {
+      const subjectQuizzes = await QuizModel.insertMany([
+        {
+          name: `${subject.name} - Quiz 1`,
+          subject: subject._id,
+          description: "Primeiro quiz",
+          duration: 30,
+          maxAttempts: 3,
+          isPublished: true,
+          startedDate: new Date("2025-01-20"),
+        },
+        {
+          name: `${subject.name} - Quiz 2`,
+          subject: subject._id,
+          description: "Segundo quiz",
+          duration: 45,
+          maxAttempts: 2,
+          isPublished: false,
+          startedDate: new Date("2025-02-10"),
+        },
+      ]);
+
+      subject.quizzes = subjectQuizzes.map((q) => q._id);
+      await subject.save();
+
+      quizzes.push(...subjectQuizzes);
+    }
+    console.log("quizzes do seed inseridos");
+
+    const users = await createUsers();
     await UserModel.insertMany(users);
     console.log("usuários do seed inseridos");
 

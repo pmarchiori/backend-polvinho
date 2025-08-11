@@ -5,10 +5,10 @@ export const createSubject = async (req, res) => {
   try {
     const { name, teacher } = req.body;
 
-    if (!name || !teacher) {
+    if (!name) {
       return res
         .status(400)
-        .json({ error: "Nome da disciplina e professor são obrigatórios" });
+        .json({ error: "Nome da disciplina é obrigatório" });
     }
 
     const newSubject = await SubjectModel.create(req.body);

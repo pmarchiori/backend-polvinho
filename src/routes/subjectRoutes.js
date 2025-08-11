@@ -23,9 +23,19 @@ router.post(
   createSubject
 );
 
-router.get("/", authenticateToken, authorizeRoles("admin"), getAllSubjects);
+router.get(
+  "/",
+  authenticateToken,
+  authorizeRoles("admin", "teacher"),
+  getAllSubjects
+);
 
-router.get("/:id", authenticateToken, authorizeRoles("admin"), getSubjectById);
+router.get(
+  "/:id",
+  authenticateToken,
+  authorizeRoles("admin", "teacher"),
+  getSubjectById
+);
 
 router.put(
   "/:id",

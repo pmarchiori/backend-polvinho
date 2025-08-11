@@ -27,9 +27,19 @@ router.post(
 
 router.get("/", authenticateToken, authorizeRoles("admin"), getAllActiveUsers);
 
-router.get("/all", authenticateToken, authorizeRoles("admin"), getAllUsers);
+router.get(
+  "/all",
+  authenticateToken,
+  authorizeRoles("admin", "teacher"),
+  getAllUsers
+);
 
-router.get("/:id", authenticateToken, authorizeRoles("admin"), getUserById);
+router.get(
+  "/:id",
+  authenticateToken,
+  authorizeRoles("admin", "teacher"),
+  getUserById
+);
 
 router.put(
   "/:id",

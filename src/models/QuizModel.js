@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const QuizSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
+    subject: { type: mongoose.Schema.Types.ObjectId, ref: "users" },
     description: { type: String },
     duration: { type: Number, required: true, default: 30 },
     maxAttempts: { type: Number },
