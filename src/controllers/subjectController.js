@@ -1,3 +1,4 @@
+import QuizModel from "../models/QuizModel.js";
 import SubjectModel from "../models/SubjectModel.js";
 import UserModel from "../models/UserModel.js";
 
@@ -5,10 +6,10 @@ export const createSubject = async (req, res) => {
   try {
     const { name, teacher } = req.body;
 
-    if (!name || !teacher) {
+    if (!name) {
       return res
         .status(400)
-        .json({ error: "Nome da disciplina e professor são obrigatórios" });
+        .json({ error: "Nome da disciplina é obrigatório" });
     }
 
     const newSubject = await SubjectModel.create(req.body);
@@ -57,7 +58,17 @@ export const getAllSubjects = async (req, res) => {
 
 export const getSubjectById = async (req, res) => {
   try {
-    const subject = await SubjectModel.findById(req.params.id);
+    const subject = await SubjectModel.findById(req.params.id)
+      .populate({
+        path: "quizzes",
+        match: { isRemoved: false },
+      })
+      .populate("teacher", "name");
+
+    if (!subject) {
+      return res.status(404).json({ error: "Disciplina não encontrada" });
+    }
+
     res.json(subject);
   } catch (error) {
     res.status(500).json({ error: error.message });

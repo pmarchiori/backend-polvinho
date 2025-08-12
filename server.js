@@ -6,6 +6,7 @@ import cors from "cors";
 import userRoutes from "./src/routes/userRoutes.js";
 import subjectRoutes from "./src/routes/subjectRoutes.js";
 import authRoutes from "./src/routes/authRoutes.js";
+import quizRoutes from "./src/routes/quizRoutes.js";
 
 const app = express();
 dotenv.config();
@@ -29,3 +30,4 @@ mongoose
 app.use("/users", userRoutes);
 app.use("/subjects", subjectRoutes);
 app.use("/login", authRoutes);
+app.use("/quizzes", quizRoutes);

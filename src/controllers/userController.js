@@ -12,7 +12,7 @@ export const createUser = async (req, res) => {
         .json({ error: "Email e matrícula são obrigatórios" });
     }
 
-    const subjectsArray = Array.isArray(subjects) ? subjects : [subjects];
+    const subjectsArray = subjects;
 
     const password = registration;
     const salt = await bcrypt.genSalt(10);
@@ -27,18 +27,16 @@ export const createUser = async (req, res) => {
       passwordHash,
     });
 
-    if (subjectsArray.length > 0) {
-      if (role === "teacher") {
-        await SubjectModel.updateMany(
-          { _id: { $in: subjectsArray } },
-          { $set: { teacher: newUser._id } }
-        );
-      } else if (role === "student") {
-        await SubjectModel.updateMany(
-          { _id: { $in: subjectsArray } },
-          { $addToSet: { students: newUser._id } }
-        );
-      }
+    if (role === "teacher") {
+      await SubjectModel.updateMany(
+        { _id: { $in: subjectsArray } },
+        { $set: { teacher: newUser._id } }
+      );
+    } else if (role === "student") {
+      await SubjectModel.updateMany(
+        { _id: { $in: subjectsArray } },
+        { $addToSet: { students: newUser._id } }
+      );
     }
 
     res.status(201).json({
@@ -81,13 +79,11 @@ export const getAllActiveUsers = async (req, res) => {
     const skip = (page - 1) * limit;
     const role = req.query.role;
 
-    const filter = {};
+    const filter = { isRemoved: false };
     if (role) filter.role = role;
 
     const [users, total] = await Promise.all([
-      UserModel.find({ isRemoved: false, ...filter })
-        .skip(skip)
-        .limit(limit),
+      UserModel.find(filter).skip(skip).limit(limit),
       UserModel.countDocuments(filter),
     ]);
     res.json({ users, total, page, totalPages: Math.ceil(total / limit) });
@@ -98,7 +94,7 @@ export const getAllActiveUsers = async (req, res) => {
 
 export const getUserById = async (req, res) => {
   try {
-    const user = await UserModel.findById(req.params.id);
+    const user = await UserModel.findById(req.params.id).populate("subjects");
     if (!user) {
       return res.status(404).json({ error: "Usuário não encontrado." });
     }
@@ -113,7 +109,7 @@ export const updateUser = async (req, res) => {
     const { password, subjects = [], role, ...rest } = req.body;
     const userId = req.params.id;
 
-    const subjectsArray = Array.isArray(subjects) ? subjects : [subjects];
+    const subjectsArray = subjects;
 
     const currentUser = await UserModel.findById(userId);
     if (!currentUser) {
@@ -136,32 +132,28 @@ export const updateUser = async (req, res) => {
       new: true,
     });
 
-    if (oldSubjects.length > 0) {
-      if (currentUser.role === "teacher") {
-        await SubjectModel.updateMany(
-          { teacher: userId },
-          { $unset: { teacher: "" } }
-        );
-      } else if (currentUser.role === "student") {
-        await SubjectModel.updateMany(
-          { students: userId },
-          { $pull: { students: userId } }
-        );
-      }
+    if (currentUser.role === "teacher") {
+      await SubjectModel.updateMany(
+        { teacher: userId },
+        { $unset: { teacher: "" } }
+      );
+    } else if (currentUser.role === "student") {
+      await SubjectModel.updateMany(
+        { students: userId },
+        { $pull: { students: userId } }
+      );
     }
 
-    if (subjectsArray.length > 0) {
-      if (finalRole === "teacher") {
-        await SubjectModel.updateMany(
-          { _id: { $in: subjectsArray } },
-          { $set: { teacher: userId } }
-        );
-      } else if (finalRole === "student") {
-        await SubjectModel.updateMany(
-          { _id: { $in: subjectsArray } },
-          { $addToSet: { students: userId } }
-        );
-      }
+    if (finalRole === "teacher") {
+      await SubjectModel.updateMany(
+        { _id: { $in: subjectsArray } },
+        { $set: { teacher: userId } }
+      );
+    } else if (finalRole === "student") {
+      await SubjectModel.updateMany(
+        { _id: { $in: subjectsArray } },
+        { $addToSet: { students: userId } }
+      );
     }
 
     res.json(updatedUser);
