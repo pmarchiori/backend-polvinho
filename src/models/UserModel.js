@@ -15,6 +15,7 @@ const UserSchema = new mongoose.Schema(
     passwordHash: { type: String, required: true },
     isRemoved: { type: Boolean, default: false },
     removedDate: { type: Date, default: null },
+    quizzes: [{ type: mongoose.Schema.Types.ObjectId, ref: "quizzes" }],
   },
   {
     timestamps: {

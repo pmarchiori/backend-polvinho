@@ -37,7 +37,7 @@ router.get(
 router.get(
   "/:id",
   authenticateToken,
-  authorizeRoles("admin", "teacher"),
+  authorizeRoles("admin", "teacher", "student"),
   getUserById
 );
 
