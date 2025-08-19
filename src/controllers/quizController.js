@@ -69,6 +69,43 @@ export const createQuiz = async (req, res) => {
   }
 };
 
+export const updateQuiz = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+
+    const quiz = await QuizModel.findByIdAndUpdate(id, updates, { new: true });
+
+    if (!quiz) {
+      return res.status(404).json({ error: "Quiz não encontrado" });
+    }
+
+    res.json(quiz);
+  } catch (error) {
+    console.error("Erro ao atualizar quiz:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getQuizById = async (req, res) => {
+  try {
+    const quiz = await QuizModel.findById(req.params.id).populate({
+      path: "subject",
+      select: "name",
+    });
+    //.populate({ path: "creator", select: "name" });
+
+    if (!quiz) {
+      return res.status(404).json({ error: "Quiz não encontrado" });
+    }
+
+    res.json(quiz);
+  } catch (error) {
+    console.error("Erro ao buscar quiz:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const softDeleteQuiz = async (req, res) => {
   try {
     const quizId = req.params.id;

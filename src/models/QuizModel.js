@@ -7,11 +7,18 @@ const QuizSchema = new mongoose.Schema(
     description: { type: String },
     duration: { type: Number, required: true, default: 30 },
     maxAttempts: { type: Number },
-    creator: {
+    teacher: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "users",
-      required: true,
+      //required: true,
     },
+    questions: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "questions",
+        default: [],
+      },
+    ],
     isPublished: { type: Boolean, default: false },
     isRemoved: { type: Boolean, default: false },
     startedDate: { type: Date, required: true },

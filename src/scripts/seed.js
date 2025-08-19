@@ -101,6 +101,7 @@ async function seedDatabase() {
           maxAttempts: 3,
           isPublished: true,
           startedDate: new Date("2025-01-20"),
+          finishedDate: new Date("2025-02-20"),
         },
         {
           name: `${subject.name} - Quiz 2`,
@@ -110,6 +111,7 @@ async function seedDatabase() {
           maxAttempts: 2,
           isPublished: false,
           startedDate: new Date("2025-02-10"),
+          finishedDate: new Date("2025-02-20"),
         },
       ]);
 
