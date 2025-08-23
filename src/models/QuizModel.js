@@ -19,6 +19,7 @@ const QuizSchema = new mongoose.Schema(
         default: [],
       },
     ],
+    quizType: { type: String },
     isPublished: { type: Boolean, default: false },
     isRemoved: { type: Boolean, default: false },
     startedDate: { type: Date, required: true },

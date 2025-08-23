@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import UserModel from "../models/UserModel.js";
 import SubjectModel from "../models/SubjectModel.js";
 import QuizModel from "../models/QuizModel.js";
+import QuestionModel from "../models/QuestionModel.js";
 
 dotenv.config();
 
@@ -85,6 +86,7 @@ async function seedDatabase() {
     await UserModel.deleteMany({});
     await SubjectModel.deleteMany({});
     await QuizModel.deleteMany({});
+    await QuestionModel.deleteMany({});
     console.log("banco limpo");
 
     const insertedSubjects = await SubjectModel.insertMany(createSubjects());
@@ -100,6 +102,7 @@ async function seedDatabase() {
           duration: 30,
           maxAttempts: 3,
           isPublished: true,
+          quizType: "Prova",
           startedDate: new Date("2025-01-20"),
           finishedDate: new Date("2025-02-20"),
         },
@@ -110,6 +113,7 @@ async function seedDatabase() {
           duration: 45,
           maxAttempts: 2,
           isPublished: false,
+          quizType: "Prova",
           startedDate: new Date("2025-02-10"),
           finishedDate: new Date("2025-02-20"),
         },

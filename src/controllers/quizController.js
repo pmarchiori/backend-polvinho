@@ -13,6 +13,7 @@ export const createQuiz = async (req, res) => {
       isPublished,
       startedDate,
       finishedDate,
+      quizType,
     } = req.body;
 
     if (!name) {
@@ -47,7 +48,8 @@ export const createQuiz = async (req, res) => {
       isPublished,
       startedDate,
       finishedDate,
-      creator: subjectData.teacher,
+      quizType,
+      teacher: subjectData.teacher,
     });
 
     await SubjectModel.findByIdAndUpdate(
@@ -89,11 +91,13 @@ export const updateQuiz = async (req, res) => {
 
 export const getQuizById = async (req, res) => {
   try {
-    const quiz = await QuizModel.findById(req.params.id).populate({
-      path: "subject",
-      select: "name",
-    });
-    //.populate({ path: "creator", select: "name" });
+    const quiz = await QuizModel.findById(req.params.id)
+      .populate({
+        path: "subject",
+        select: "name",
+      })
+      .populate({ path: "teacher", select: "name" })
+      .populate({ path: "questions", select: "question options" });
 
     if (!quiz) {
       return res.status(404).json({ error: "Quiz não encontrado" });
