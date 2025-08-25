@@ -4,6 +4,7 @@ import {
   softDeleteQuiz,
   getQuizById,
   updateQuiz,
+  getQuizResultsById,
 } from "../controllers/quizController.js";
 import {
   authenticateToken,
@@ -13,6 +14,13 @@ import {
 const router = express.Router();
 
 router.post("/", authenticateToken, authorizeRoles("teacher"), createQuiz);
+
+router.get(
+  "/:id/results",
+  authenticateToken,
+  authorizeRoles("teacher"),
+  getQuizResultsById
+);
 
 //colocar authenticate e authorize
 router.get("/:id", getQuizById);

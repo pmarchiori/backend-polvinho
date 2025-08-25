@@ -1,3 +1,4 @@
+import AnswerModel from "../models/AnswerModel.js";
 import QuizModel from "../models/QuizModel.js";
 import SubjectModel from "../models/SubjectModel.js";
 import UserModel from "../models/UserModel.js";
@@ -106,6 +107,34 @@ export const getQuizById = async (req, res) => {
     res.json(quiz);
   } catch (error) {
     console.error("Erro ao buscar quiz:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getQuizResultsById = async (req, res) => {
+  try {
+    const quizId = req.params.id;
+
+    const attempts = await AnswerModel.find({ quiz: quizId })
+      .populate("student", "name")
+      .sort({ score: -1 })
+      .lean();
+
+    const studentBestScores = {};
+    attempts.forEach((attempt) => {
+      const currentBest = studentBestScores[attempt.student._id];
+      if (!currentBest) {
+        studentBestScores[attempt.student._id] = {
+          studentId: attempt.student._id,
+          name: attempt.student.name,
+          bestScore: attempt.score, //
+        };
+      }
+    });
+
+    res.json(Object.values(studentBestScores));
+  } catch (error) {
+    console.error("Erro ao buscar resultados do quiz:", error);
     res.status(500).json({ error: error.message });
   }
 };

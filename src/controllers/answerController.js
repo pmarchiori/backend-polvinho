@@ -84,3 +84,27 @@ export const submitQuiz = async (req, res) => {
     res.status(500).json({ error: "Erro ao enviar quiz" });
   }
 };
+
+export const getStudentAttempts = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    const { quizId } = req.params;
+
+    const attempts = await AnswerModel.find({
+      student: studentId,
+      quiz: quizId,
+    }).sort({ attempt: 1 });
+
+    res.json(
+      attempts.map((a) => ({
+        attempt: a.attempt,
+        score: a.score,
+        total: 10,
+        quizName: a.quizName,
+      }))
+    );
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Erro ao buscar tentativas" });
+  }
+};

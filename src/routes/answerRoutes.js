@@ -1,5 +1,8 @@
 import express from "express";
-import { submitQuiz } from "../controllers/answerController.js";
+import {
+  submitQuiz,
+  getStudentAttempts,
+} from "../controllers/answerController.js";
 import {
   authenticateToken,
   authorizeRoles,
@@ -12,6 +15,13 @@ router.post(
   authenticateToken,
   authorizeRoles("student"),
   submitQuiz
+);
+
+router.get(
+  "/student/:quizId",
+  authenticateToken,
+  authorizeRoles("student"),
+  getStudentAttempts
 );
 
 export default router;
