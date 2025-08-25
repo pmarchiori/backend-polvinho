@@ -7,6 +7,8 @@ import userRoutes from "./src/routes/userRoutes.js";
 import subjectRoutes from "./src/routes/subjectRoutes.js";
 import authRoutes from "./src/routes/authRoutes.js";
 import quizRoutes from "./src/routes/quizRoutes.js";
+import questionRoutes from "./src/routes/questionsRoutes.js";
+import answerRoutes from "./src/routes/answerRoutes.js";
 
 const app = express();
 dotenv.config();
@@ -31,3 +33,5 @@ app.use("/users", userRoutes);
 app.use("/subjects", subjectRoutes);
 app.use("/login", authRoutes);
 app.use("/quizzes", quizRoutes);
+app.use("/questions", questionRoutes);
+app.use("/answers", answerRoutes);

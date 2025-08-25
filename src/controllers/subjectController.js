@@ -1,4 +1,3 @@
-import QuizModel from "../models/QuizModel.js";
 import SubjectModel from "../models/SubjectModel.js";
 import UserModel from "../models/UserModel.js";
 
