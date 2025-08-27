@@ -221,3 +221,37 @@ export const deleteUser = async (req, res) => {
     res.status(500).json({ error: "Erro ao excluir usuário.", details: error });
   }
 };
+
+// userController.js
+export const changePassword = async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+
+    if (!email || !newPassword) {
+      return res
+        .status(400)
+        .json({ error: "Email e nova senha são obrigatórios" });
+    }
+
+    const user = await UserModel.findOne({ email });
+    if (!user) return res.status(404).json({ error: "Usuário não encontrado" });
+
+    // validação da senha
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{5,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({
+        error:
+          "A nova senha deve ter no mínimo 5 caracteres, incluindo letra maiúscula, minúscula, número e caractere especial.",
+      });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.passwordHash = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.json({ message: "Senha alterada com sucesso" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+};

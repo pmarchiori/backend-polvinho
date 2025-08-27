@@ -2,6 +2,7 @@ import express from "express";
 import {
   submitQuiz,
   getStudentAttempts,
+  getAnswerById,
 } from "../controllers/answerController.js";
 import {
   authenticateToken,
@@ -22,6 +23,13 @@ router.get(
   authenticateToken,
   authorizeRoles("student"),
   getStudentAttempts
+);
+
+router.get(
+  "/:answerId",
+  authenticateToken,
+  authorizeRoles("student", "teacher"),
+  getAnswerById
 );
 
 export default router;
