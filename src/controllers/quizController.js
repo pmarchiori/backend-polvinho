@@ -1,7 +1,9 @@
 import AnswerModel from "../models/AnswerModel.js";
+import QuestionModel from "../models/QuestionModel.js";
 import QuizModel from "../models/QuizModel.js";
 import SubjectModel from "../models/SubjectModel.js";
 import UserModel from "../models/UserModel.js";
+import { shuffleQuestions } from "../scripts/shuffleQuestions.js";
 
 export const createQuiz = async (req, res) => {
   try {
@@ -93,10 +95,7 @@ export const updateQuiz = async (req, res) => {
 export const getQuizById = async (req, res) => {
   try {
     const quiz = await QuizModel.findById(req.params.id)
-      .populate({
-        path: "subject",
-        select: "name",
-      })
+      .populate({ path: "subject", select: "name" })
       .populate({ path: "teacher", select: "name" })
       .populate({ path: "questions", select: "question options" });
 
@@ -104,7 +103,16 @@ export const getQuizById = async (req, res) => {
       return res.status(404).json({ error: "Quiz não encontrado" });
     }
 
-    res.json(quiz);
+    const safeQuiz = quiz.toObject();
+    safeQuiz.questions.forEach((q) => {
+      if (q.options && Array.isArray(q.options)) {
+        q.options = shuffleQuestions(
+          q.options.map(({ _id, option }) => ({ _id, option }))
+        );
+      }
+    });
+
+    res.json(safeQuiz);
   } catch (error) {
     console.error("Erro ao buscar quiz:", error);
     res.status(500).json({ error: error.message });
@@ -127,7 +135,8 @@ export const getQuizResultsById = async (req, res) => {
         studentBestScores[attempt.student._id] = {
           studentId: attempt.student._id,
           name: attempt.student.name,
-          bestScore: attempt.score, //
+          bestScore: attempt.score,
+          answerId: attempt._id,
         };
       }
     });
@@ -161,6 +170,11 @@ export const softDeleteQuiz = async (req, res) => {
     await UserModel.updateMany(
       { quizzes: quizId },
       { $pull: { quizzes: quizId } }
+    );
+
+    await QuestionModel.updateMany(
+      { quizzes: quizId },
+      { $set: { isRemoved: true } }
     );
 
     res.json({ message: "Quiz marcado como removido.", quiz });

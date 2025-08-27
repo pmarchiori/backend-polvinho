@@ -7,6 +7,7 @@ import {
   updateUser,
   softDeleteUser,
   deleteUser,
+  changePassword,
 } from "../controllers/userController.js";
 
 import { validateUser } from "../middleware/validateUser.js";
@@ -16,6 +17,8 @@ import {
 } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
+
+router.put("/change-password", changePassword);
 
 router.post(
   "/",

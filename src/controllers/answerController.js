@@ -2,6 +2,7 @@ import QuizModel from "../models/QuizModel.js";
 import QuestionModel from "../models/QuestionModel.js";
 import AnswerModel from "../models/AnswerModel.js";
 import UserModel from "../models/UserModel.js";
+import { shuffleQuestions } from "../scripts/shuffleQuestions.js";
 
 export const submitQuiz = async (req, res) => {
   try {
@@ -97,6 +98,7 @@ export const getStudentAttempts = async (req, res) => {
 
     res.json(
       attempts.map((a) => ({
+        _id: a._id,
         attempt: a.attempt,
         score: a.score,
         total: 10,
@@ -106,5 +108,58 @@ export const getStudentAttempts = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Erro ao buscar tentativas" });
+  }
+};
+
+export const getAnswerById = async (req, res) => {
+  try {
+    const user = req.user;
+    const { answerId } = req.params;
+
+    const answerQuery = { _id: answerId };
+    if (user.role === "student") {
+      answerQuery.student = user.id;
+    }
+
+    const answer = await AnswerModel.findOne(answerQuery)
+      .populate({
+        path: "quiz",
+        select: "name subject",
+        populate: { path: "subject", select: "name" },
+      })
+      .populate({
+        path: "answers.question",
+        select: "question options",
+      });
+
+    if (!answer)
+      return res.status(404).json({ error: "Tentativa não encontrada" });
+
+    res.json({
+      quizName: answer.quizName,
+      subject: answer.quiz.subject.name,
+      attempt: answer.attempt,
+      score: answer.score,
+      correct: answer.correct,
+      wrong: answer.wrong,
+      answers: answer.answers.map(
+        ({ question, selectedOption, isCorrect }) => ({
+          questionId: question?._id ?? null,
+          questionText: question?.question ?? "-",
+          options: shuffleQuestions(
+            question?.options.map(({ _id, option, isCorrect }) => ({
+              optionId: _id,
+              text: option,
+              isCorrect,
+            })) ?? []
+          ),
+          selectedOption,
+          isCorrect,
+        })
+      ),
+    });
+  } catch (err) {
+    console.error("Erro ao buscar detalhes da tentativa:", err);
+    res.status(500).json({ error: "Erro ao buscar detalhes da tentativa" });
   }
 };
