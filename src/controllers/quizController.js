@@ -35,11 +35,16 @@ export const createQuiz = async (req, res) => {
     if (!subjectData) {
       return res.status(404).json({ error: "Disciplina não encontrada" });
     }
-
     if (!subjectData.teacher) {
       return res
         .status(400)
         .json({ error: "A disciplina não possui professor vinculado" });
+    }
+
+    function normalizeDate(dateStr) {
+      const date = new Date(dateStr);
+      date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
+      return date;
     }
 
     const newQuiz = await QuizModel.create({
@@ -49,8 +54,8 @@ export const createQuiz = async (req, res) => {
       duration,
       maxAttempts,
       isPublished,
-      startedDate,
-      finishedDate,
+      startedDate: normalizeDate(startedDate),
+      finishedDate: normalizeDate(finishedDate),
       quizType,
       teacher: subjectData.teacher,
     });

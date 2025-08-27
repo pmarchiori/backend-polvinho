@@ -30,7 +30,7 @@ router.put("/:id", authenticateToken, authorizeRoles("teacher"), updateQuiz);
 router.put(
   "/:id/remove",
   authenticateToken,
-  authorizeRoles("teacher"),
+  authorizeRoles("teacher", "admin"),
   softDeleteQuiz
 );
 
